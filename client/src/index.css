@@ -1,0 +1,45 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Cormorant+Garamond:wght@300;400;500;600&family=Montserrat:wght@300;400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply font-montserrat text-gray-700 bg-gradient-to-b from-pink-50 to-white;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-playfair text-gray-800;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-pink-600 hover:bg-pink-700 text-white font-medium py-3 px-6 rounded-lg transition duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl;
+  }
+  
+  .btn-secondary {
+    @apply bg-nude-500 hover:bg-nude-600 text-white font-medium py-3 px-6 rounded-lg transition duration-300 shadow-md hover:shadow-lg;
+  }
+  
+  .section-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20;
+  }
+  
+  .card {
+    @apply bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition duration-300 border border-pink-100;
+  }
+  
+  .nav-link {
+    @apply text-gray-700 hover:text-pink-600 transition duration-200 font-medium;
+  }
+  
+  .nav-link.active {
+    @apply text-pink-600 border-b-2 border-pink-600;
+  }
+}
