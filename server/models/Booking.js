@@ -44,6 +44,11 @@ const BookingSchema = new mongoose.Schema({
     enum: ['pending', 'confirmed', 'cancelled', 'completed'],
     default: 'pending',
   },
+  paymentStatus: {
+    type: String,
+    enum: ['pending', 'verified', 'rejected'],
+    default: 'pending',
+  },
   amountPaid: {
     type: Number,
     required: true,
@@ -51,6 +56,25 @@ const BookingSchema = new mongoose.Schema({
   totalAmount: {
     type: Number,
     required: true,
+  },
+  amountPaidNaira: {
+    type: Number,
+    required: true,
+  },
+  totalAmountNaira: {
+    type: Number,
+    required: true,
+  },
+  paymentVerifiedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+  },
+  paymentVerifiedAt: {
+    type: Date,
+  },
+  paymentRejectionReason: {
+    type: String,
+    default: '',
   },
   createdAt: {
     type: Date,

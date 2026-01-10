@@ -3,22 +3,71 @@
   <head>
     <meta charset="utf-8" />
 
-    <!-- ✅ favicon (Vite-safe) -->
-    <link rel="icon" type="image/png" href="/client/src/assets/logo2.png" />
+    <!-- ✅ favicon (Updated for proper Vite setup) -->
+    <link rel="icon" type="image/png" href="/src/assets/logo2.png" />
+
+    <!-- ✅ Apple Touch Icon (for iOS devices) -->
+    <link rel="apple-touch-icon" href="/src/assets/logo2.png">
+
+    <!-- ✅ Preconnect to improve performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#ec4899" />
+    <meta name="theme-color" content="#fecdd3" />
     <meta
       name="description"
-      content="touchbydebby - Luxury Makeup Artist"
+      content="touchbydebby - Professional Luxury Makeup Artist for bridal, special events, and editorial makeup services"
     />
+    
+    <!-- ✅ Open Graph / Social Media Meta Tags -->
+    <meta property="og:title" content="touchbydebby | Luxury Makeup Artist" />
+    <meta property="og:description" content="Professional Luxury Makeup Artist for bridal, special events, and editorial makeup services" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://touchbydebby.com" />
+    
+    <!-- ✅ Keywords for SEO -->
+    <meta name="keywords" content="makeup artist, bridal makeup, luxury makeup, professional makeup, beauty services, makeup studio">
+    
+    <!-- ✅ Canonical URL -->
+    <link rel="canonical" href="https://touchbydebby.com">
+    
     <title>touchbydebby | Luxury Makeup Artist</title>
   </head>
 
   <body>
-    <div id="root"></div>
+    <!-- ✅ Loading state for better UX -->
+    <div id="root">
+      <div style="
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background: linear-gradient(135deg, #fdf2f8 0%, #ffe4e6 100%);
+      ">
+        <div style="text-align: center;">
+          <div style="
+            width: 50px;
+            height: 50px;
+            border: 3px solid #f3f4f6;
+            border-top-color: #f472b6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+          "></div>
+          <p style="color: #9d174d; font-family: Arial, sans-serif;">Loading touchbydebby...</p>
+        </div>
+      </div>
+    </div>
 
-    <!-- 🔴 THIS WAS MISSING -->
+    <!-- ✅ CSS for loading animation -->
+    <style>
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+    </style>
+
+    <!-- ✅ Corrected script path (should be src/main.jsx in most Vite setups) -->
     <script type="module" src="/src/index.jsx"></script>
   </body>
 </html>

@@ -1,34 +1,39 @@
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+// middleware/auth.js
+import jwt from 'jsonwebtoken';
+import User from '../models/User.js';
 
-const auth = async (req, res, next) => {
+export const auth = async (req, res, next) => {
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
+    console.log("🔐 Auth middleware called");
+    const token = req.headers.authorization?.replace("Bearer ", "");
     
     if (!token) {
-      throw new Error();
+      console.log("❌ No token provided");
+      return res.status(401).json({ error: "Unauthorized" });
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'touchbydebby-secret-key');
     const user = await User.findById(decoded.userId);
 
     if (!user) {
-      throw new Error();
+      console.log("❌ User not found");
+      return res.status(401).json({ error: "Unauthorized" });
     }
 
     req.user = user;
-    req.token = token;
+    console.log("✅ Authenticated user:", user.email);
     next();
   } catch (error) {
-    res.status(401).json({ error: 'Please authenticate' });
+    console.error("🔐 Auth error:", error.message);
+    res.status(401).json({ error: "Unauthorized" });
   }
 };
 
-const isAdmin = (req, res, next) => {
-  if (req.user.role !== 'admin') {
-    return res.status(403).json({ error: 'Access denied. Admin only.' });
+export const isAdmin = (req, res, next) => {
+  if (req.user.role !== "admin") {
+    console.log("❌ User is not an admin:", req.user.email);
+    return res.status(403).json({ error: "Admin access required" });
   }
+  console.log("✅ User is admin:", req.user.email);
   next();
 };
-
-module.exports = { auth, isAdmin };

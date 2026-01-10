@@ -1,8 +1,10 @@
+// src/pages/Booking.jsx
+
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Upload, DollarSign, AlertCircle } from 'lucide-react';
+import { Upload, DollarSign, AlertCircle, Banknote, Building, User, CreditCard, Image } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const Booking = () => {
@@ -10,7 +12,9 @@ const Booking = () => {
   const [services, setServices] = useState([]);
   const [selectedService, setSelectedService] = useState(null);
   const [paymentScreenshot, setPaymentScreenshot] = useState(null);
+  const [screenshotPreview, setScreenshotPreview] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const exchangeRate = 1500; // 1 USD = 1500 NGN
   
   const {
     register,
@@ -44,10 +48,27 @@ const Booking = () => {
         return;
       }
       setPaymentScreenshot(file);
+      
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setScreenshotPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
-  const calculateDeposit = () => {
+  const calculateNairaAmount = (usdAmount) => {
+    return Math.round(parseFloat(usdAmount || 0) * exchangeRate);
+  };
+
+  const calculateDepositNaira = () => {
+    const price = parseFloat(servicePrice) || 0;
+    const depositUSD = price * 0.75;
+    return Math.round(depositUSD * exchangeRate);
+  };
+
+  const calculateDepositUSD = () => {
     const price = parseFloat(servicePrice) || 0;
     return (price * 0.75).toFixed(2);
   };
@@ -60,6 +81,10 @@ const Booking = () => {
 
     setIsSubmitting(true);
 
+    const depositUSD = calculateDepositUSD();
+    const depositNaira = calculateDepositNaira();
+    const totalNaira = calculateNairaAmount(servicePrice);
+
     const formData = new FormData();
     formData.append('fullName', data.fullName);
     formData.append('email', data.email);
@@ -69,12 +94,14 @@ const Booking = () => {
     formData.append('preferredDate', data.preferredDate);
     formData.append('preferredTime', data.preferredTime);
     formData.append('location', data.location || '');
-    formData.append('amountPaid', calculateDeposit());
+    formData.append('amountPaid', depositUSD);
     formData.append('totalAmount', servicePrice);
     formData.append('paymentScreenshot', paymentScreenshot);
+    formData.append('amountPaidNaira', depositNaira);
+    formData.append('totalAmountNaira', totalNaira);
 
     try {
-      await axios.post('http://localhost:5000/api/bookings', formData, {
+      const response = await axios.post('http://localhost:5000/api/bookings', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -84,6 +111,7 @@ const Booking = () => {
       
       // Reset form
       setPaymentScreenshot(null);
+      setScreenshotPreview(null);
       
       // Navigate to home after 2 seconds
       setTimeout(() => {
@@ -96,6 +124,10 @@ const Booking = () => {
       setIsSubmitting(false);
     }
   };
+
+  const totalNaira = calculateNairaAmount(servicePrice);
+  const depositNaira = calculateDepositNaira();
+  const depositUSD = calculateDepositUSD();
 
   return (
     <div className="pt-20">
@@ -201,7 +233,7 @@ const Booking = () => {
                     <option value="">Choose a service</option>
                     {services.map((service) => (
                       <option key={service._id} value={service._id}>
-                        {service.name} - ${service.price}
+                        {service.name} - ₦{Math.round(service.price * exchangeRate).toLocaleString()} (${service.price} USD)
                       </option>
                     ))}
                     <option value="custom">Custom Service</option>
@@ -304,6 +336,51 @@ const Booking = () => {
               <div className="space-y-6">
                 <h2 className="text-2xl font-cormorant font-bold text-gray-800">Payment Information</h2>
                 
+                {/* Payment Instructions - Always Show */}
+                <div className="bg-blue-50 rounded-xl p-6">
+                  <div className="flex items-center mb-4">
+                    <CreditCard className="h-6 w-6 text-blue-600 mr-2" />
+                    <h3 className="text-lg font-semibold text-gray-800">Payment Instructions</h3>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div className="bg-white rounded-lg p-4">
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded">
+                          <Building className="h-5 w-5 text-blue-500" />
+                          <div>
+                            <p className="text-sm text-gray-500">Bank</p>
+                            <p className="font-semibold">OPay</p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded">
+                          <CreditCard className="h-5 w-5 text-blue-500" />
+                          <div>
+                            <p className="text-sm text-gray-500">Account Number</p>
+                            <p className="font-semibold">9159113921</p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded md:col-span-2">
+                          <User className="h-5 w-5 text-blue-500" />
+                          <div>
+                            <p className="text-sm text-gray-500">Account Name</p>
+                            <p className="font-semibold">Favour Esohe Modmodu</p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-4 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                        <p className="text-sm text-yellow-800">
+                          💡 <strong>Important:</strong> Please include your name as reference when transferring. 
+                          After payment, upload the screenshot below.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
                 {servicePrice && (
                   <div className="bg-pink-50 rounded-xl p-6">
                     <div className="flex items-center mb-4">
@@ -312,22 +389,34 @@ const Booking = () => {
                     </div>
                     
                     <div className="space-y-4">
-                      <div className="flex justify-between items-center p-3 bg-white rounded-lg">
-                        <span className="text-gray-700">Total Amount:</span>
-                        <span className="text-2xl font-bold text-pink-600">${servicePrice}</span>
+                      <div className="flex justify-between items-center p-4 bg-white rounded-lg">
+                        <div>
+                          <span className="text-gray-700">Total Service Amount:</span>
+                          <p className="text-sm text-gray-500">Payable in Naira</p>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-2xl font-bold text-pink-600">₦{totalNaira.toLocaleString()}</span>
+                          <p className="text-sm text-gray-500">(${servicePrice} USD)</p>
+                        </div>
                       </div>
                       
-                      <div className="flex justify-between items-center p-3 bg-white rounded-lg">
-                        <span className="text-gray-700">Required Deposit (75%):</span>
-                        <span className="text-xl font-bold text-pink-600">${calculateDeposit()}</span>
+                      <div className="flex justify-between items-center p-4 bg-white rounded-lg">
+                        <div>
+                          <span className="text-gray-700">Required Deposit (75%):</span>
+                          <p className="text-sm text-gray-500">To be paid now in Naira</p>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-xl font-bold text-pink-600">₦{depositNaira.toLocaleString()}</span>
+                          <p className="text-sm text-gray-500">(${depositUSD} USD)</p>
+                        </div>
                       </div>
                     </div>
                     
-                    <div className="mt-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                    <div className="mt-4 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
                       <div className="flex items-start">
                         <AlertCircle className="h-5 w-5 text-yellow-600 mr-2 mt-0.5" />
                         <p className="text-sm text-yellow-800">
-                          Please transfer the deposit amount to our bank account and upload the payment screenshot.
+                          Please transfer <strong>₦{depositNaira.toLocaleString()}</strong> to the account above and upload the payment screenshot.
                           Booking will only be confirmed after payment verification.
                         </p>
                       </div>
@@ -335,35 +424,57 @@ const Booking = () => {
                   </div>
                 )}
 
-                {/* File Upload */}
+                {/* File Upload with Preview */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Upload Payment Screenshot *
                   </label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-pink-400 transition">
-                    <input
-                      type="file"
-                      id="payment-screenshot"
-                      accept="image/*"
-                      onChange={handleFileChange}
-                      className="hidden"
-                    />
-                    <label htmlFor="payment-screenshot" className="cursor-pointer">
-                      {paymentScreenshot ? (
-                        <div className="space-y-2">
-                          <Upload className="h-12 w-12 text-green-500 mx-auto" />
-                          <p className="text-green-600 font-medium">File selected</p>
-                          <p className="text-sm text-gray-500">{paymentScreenshot.name}</p>
+                  
+                  {screenshotPreview ? (
+                    <div className="space-y-4">
+                      <div className="border-2 border-green-200 rounded-lg p-4">
+                        <div className="flex items-center mb-3">
+                          <Image className="h-5 w-5 text-green-500 mr-2" />
+                          <span className="text-green-600 font-medium">Screenshot Preview</span>
                         </div>
-                      ) : (
+                        <div className="text-center">
+                          <img 
+                            src={screenshotPreview} 
+                            alt="Payment Screenshot Preview" 
+                            className="max-h-64 mx-auto rounded-lg border border-gray-200"
+                          />
+                          <p className="mt-2 text-sm text-gray-500">{paymentScreenshot?.name}</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPaymentScreenshot(null);
+                            setScreenshotPreview(null);
+                          }}
+                          className="mt-3 text-sm text-red-600 hover:text-red-800"
+                        >
+                          Remove & Upload Different Screenshot
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-pink-400 transition">
+                      <input
+                        type="file"
+                        id="payment-screenshot"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        className="hidden"
+                      />
+                      <label htmlFor="payment-screenshot" className="cursor-pointer">
                         <div className="space-y-2">
                           <Upload className="h-12 w-12 text-gray-400 mx-auto" />
                           <p className="text-gray-600">Click to upload payment screenshot</p>
                           <p className="text-sm text-gray-500">PNG, JPG up to 5MB</p>
                         </div>
-                      )}
-                    </label>
-                  </div>
+                      </label>
+                    </div>
+                  )}
                   {!paymentScreenshot && (
                     <p className="mt-2 text-sm text-red-600">Payment screenshot is required</p>
                   )}
